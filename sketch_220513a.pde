@@ -1,8 +1,7 @@
 //              ABOUT
-//This is a Java application that runs
+//This is a Processing application that runs
 //N-Body[1] simulations using the Barnes-
 //Hut[2] algorithm and CPU multi-threading.
-//It's built using the Processing Library.
 //It runs simulations on the order of
 //10^4 N.
 
@@ -10,31 +9,33 @@
 //[2] = https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation
 import java.util.ArrayList;
 
-//SETTINGS
-static int N = 10000;
+//MAIN SETTINGS
+int N = 10000;
 static float vel = 50;
-static int topMass = 5;
-static float G = 50; //gravitational constant
+static float G = 40; //gravitational constant
 static boolean singleGalaxy = true; //a single Galaxy [true] or a system of Galaxies / Superclusters [false] (use different settings of G and vel for these, example G *  5 for false)
+static boolean showAsVectors = false; //show as vectors instead of points
+
+//SETTINGS
+static int topMass = 5;
 static boolean dynamicTimestep = true; //keeps at constant simulation speed at the cost of accuracy for larger values of N //overrides dt value
 static boolean multithread = true; //RUNS FORCE CALCULATIONS SIMULTANEOUSLY ACROSS THREADS
 static boolean showTree = false; //show the Barnes-Hut tree
-static boolean showAsVectors = true; //show as vectors instead of points
+static boolean culling = true; //cull far off particles to save on perfomance
 
 //MORE ADVANCED SETTINGS?
 static int threads = 12;
-float dt = 0.01;
+float dt = 0.005;
 float noiseScale = 0.02;
 float rootWidth = 5000; //only the initial rootWidth for the first instantiation
-static int margin = 20;
-static int frameRateMax = 120;
+static int margin = 10;
 
 ArrayList<Particle> particles = new ArrayList<Particle>(N);
 TreeNode root = new TreeNode(0,0, 800);
 
 void setup(){
   size(1000, 1000, P2D);
-  frameRate(frameRateMax);
+  frameRate(240);
   background(0);
   
   for(int i = 0; i < N; i++){
@@ -72,7 +73,7 @@ PVector getPos(){
     }else{
       weight = 1;
     }
-    if( noise(position.x * noiseScale, position.y * noiseScale) * weight > bestNoise){
+    if(noise(position.x * noiseScale, position.y * noiseScale) * weight > bestNoise){
       bestPos = position;
       bestNoise = noise(position.x * noiseScale, position.y * noiseScale) * weight;
     }
@@ -81,8 +82,8 @@ PVector getPos(){
 }
 
 void draw(){
+  ArrayList<Particle> particlesToCull = new ArrayList<Particle>();
   background(0);
-  //showVectors(3);
   
   instantiateTree();
   //per particle calculations
@@ -94,6 +95,9 @@ void draw(){
     }
     if(abs(particle.pos.y - height/2) > greatestDist){
       greatestDist = abs(particle.pos.y - height/2);
+    }
+    if(dist(particle.pos.x, particle.pos.y, width/2, height/2) > 1000){
+      particlesToCull.add(particle);
     }
     root.addParticle(particle); //add particle to tree
   }
@@ -111,7 +115,10 @@ void draw(){
   if(showTree){
     root.display(); //show the area of each node and each non-leaf's center of mass
   }
-  //root.displayOnlyCOM(); //show ONLY each non-leaf's center of mass
+  if(culling){
+    text("N: " + N, width/2, 10);
+    cull(particlesToCull);
+  }
   
   text("Framerate: " + frameRate, 0, 10);
 }
@@ -134,6 +141,7 @@ void showError(){
   COMVel.div(dt);
   text("Per frame acceleration error: " + PVector.div(PVector.sub(COMVel, lastCOMVel),1), 0, 30);
   text("root center of mass veloctiy: " + COMVel, 0, 40);
+  text("root center of mass: " + COM, 0, 60);
   lastCOM = COM;
   lastCOMVel = COMVel;
 }
@@ -143,33 +151,9 @@ void updateTimestep(){
   text("dt: " + dt, 0, 50);
 }
 
-
-ArrayList<PVector> prevCOMs = new ArrayList<PVector>();
-ArrayList<PVector> newCOMs = new ArrayList<PVector>();
-ArrayList<PVector> avgCOMVel = new ArrayList<PVector>();
-void showVectors(int depth){ // depth 0 = only root | depth 1 = root's children | depth 2 = root's children children | ... //TODO: REPLACE ALL OF THIS WITH A SYSTEM THAT SHOWS FORCE VECTORS
-   newCOMs = getCOMs(root, depth);
-   if(prevCOMs.size() == newCOMs.size()){
-     for(int i = 0; i < newCOMs.size() - 1; i++){
-       PVector COMVel = new PVector();
-       PVector.sub(newCOMs.get(i), prevCOMs.get(i), COMVel);
-       avgCOMVel.add(COMVel);
-       stroke(255,0,0, 100);
-       ellipse(newCOMs.get(i).x, newCOMs.get(i).y, 2,2);
-     }
-   }
-   prevCOMs = new ArrayList<PVector>(newCOMs.size());
-   prevCOMs.addAll(newCOMs);
-}
-
-ArrayList<PVector> getCOMs(TreeNode node, int depth){
-  ArrayList<PVector> COMs = new ArrayList<PVector>();
-  if(!node.leaf && depth != 0){
-    for(int j = 0; j < 4; j++){
-      TreeNode child = node.children[j];
-      COMs.addAll(getCOMs(child, depth - 1));
-    }
+void cull(ArrayList<Particle> list){
+  for(Particle particle : list){
+    N--;
+    particles.remove(particle);
   }
-  COMs.add(node.COM);
-  return COMs;
 }
