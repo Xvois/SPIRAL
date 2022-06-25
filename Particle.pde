@@ -18,9 +18,6 @@ public class Particle{
     PVector.div(totalForce, mass, new_acc);
     PVector new_vel = new PVector();
     PVector.add(vel, PVector.mult(PVector.add(acc, new_acc), (dt * 0.5)), new_vel);
-    if(pos == new_pos){
-      println("A particle with totalForce: " + totalForce + " has not moved");
-    }
     pos = new_pos;
     vel = new_vel;
     acc = new_acc;
@@ -34,7 +31,7 @@ public class Particle{
       PVector normAcc = new PVector();
       PVector.div(acc, acc.mag(), normAcc);
       strokeWeight(1);
-      stroke(vel.mag() * 2, 255 - vel.mag() * 1.5, 0, 100);
+      stroke(vel.mag() * 2, 255 - vel.mag() * 1.5, 0, 150);
       line(pos.x, pos.y, pos.x + normVel.x * 5, pos.y + normVel.y * 5);
       //line(pos.x, pos.y, pos.x + normAcc.x * 3, pos.y + normAcc.y * 3);
       return;
