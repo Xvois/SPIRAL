@@ -2,7 +2,7 @@
 import java.util.*;
 
 static float THETA = 0.5; //Threshold value for Barnes-Hut
-static float EPSILON = 1.5; //Smoothing factor for when r --> 0
+static float EPSILON = 2; //Smoothing factor for when r --> 0
 float validity;
 ArrayList<TreeNode> targets;
 
@@ -22,28 +22,25 @@ void calcGravitation(){
 
 void calcGravitationThreaded(){
   ArrayList<MultithreadGravitation> activeThreads = new ArrayList<MultithreadGravitation>();
-  for(int i = 1; i < threads; i++){
+  for(int i = 0; i < threads; i++){
     MultithreadGravitation thread = new MultithreadGravitation(i);
     thread.start();
     activeThreads.add(thread);
   }
-  MultithreadGravitation masterThread = new MultithreadGravitation(0);
+  MultithreadGravitation masterThread = new MultithreadGravitation(threads);
   masterThread.run();
   activeThreads.add(masterThread);
   boolean ready = false; //MASTER THREAD ENSURES THAT ALL CALCULATIONS ARE COMPLETE BEFORE MOVING FORWARD
   while(ready == false){
     ready = true;
     for(MultithreadGravitation thread : activeThreads){
+      //print("Thread " + thread.threadNum + " " + thread.finished + " ");
       if(!ready){break;}
       else if(!thread.finished){
         ready = false;
       }
     }
   }
-  //for(MultithreadGravitation thread : activeThreads){
-  //  print(thread.finished);
-  //}
-  //println();
 }
 
 
@@ -65,9 +62,6 @@ float validity(TreeNode node, Particle p){
   displacement.x = node.COM.x - p.pos.x;
   displacement.y = node.COM.y - p.pos.y;
   float distance = displacement.mag();
-  //print("NODE WIDTH = " + nodeWidth + " VALIDITY = " + (nodeWidth / distance));
-  //print(" VALID : " + ((nodeWidth / distance) < THETA));
-  //println("");
   return (nodeWidth / distance);
 }
 

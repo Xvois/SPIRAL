@@ -6,7 +6,6 @@ class TreeNode{
   int numOfParticles;
   TreeNode[] children;
   
-  boolean hasParticle;
   Particle particle;
   boolean leaf;
   
@@ -17,7 +16,6 @@ class TreeNode{
     
     this.numOfParticles = 0;
     this.leaf = true;
-    this.hasParticle = false;
     this.particle = null;
     this.children = new TreeNode[4];
     
@@ -83,7 +81,6 @@ class TreeNode{
       }
   
       // Not a leaf
-      this.leaf = false;
       this.totalMass += p.mass;
       this.numOfParticles++;
       this.children[this.index(p)].addParticle(p);

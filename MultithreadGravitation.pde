@@ -7,7 +7,7 @@ public class MultithreadGravitation extends Thread {
   }
   
   public void run(){
-    for(int i = threadNum; i + threads <= particles.size(); i = i + threads){
+    for(int i = threadNum; i < particles.size(); i += threads){
       Particle p = particles.get(i);
       targets = traverseNode(root, p);
       PVector totalForce = new PVector();

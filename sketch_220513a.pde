@@ -3,7 +3,7 @@
 //N-Body[1] simulations using the Barnes-
 //Hut[2] algorithm and CPU multi-threading.
 //It runs simulations on the order of
-//10^4 N.
+//10^4 N with a frametime < 1s.
 
 //[1] = https://en.wikipedia.org/wiki/N-body_problem
 //[2] = https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation
@@ -11,13 +11,13 @@ import java.util.ArrayList;
 
 //MAIN SETTINGS
 int N = 10000;
-static float vel = 50;
+static float vel = 30;
 static float G = 40; //gravitational constant
 static boolean singleGalaxy = true; //a single Galaxy [true] or a system of Galaxies / Superclusters [false] (use different settings of G and vel for these, example G *  5 for false)
 static boolean showAsVectors = false; //show as vectors instead of points
 
 //SETTINGS
-static int topMass = 5;
+static int topMass = 2;
 static boolean dynamicTimestep = true; //keeps at constant simulation speed at the cost of accuracy for larger values of N //overrides dt value
 static boolean multithread = true; //RUNS FORCE CALCULATIONS SIMULTANEOUSLY ACROSS THREADS
 static boolean showTree = false; //show the Barnes-Hut tree
